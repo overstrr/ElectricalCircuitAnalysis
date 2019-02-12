@@ -204,7 +204,7 @@ def rotateComponent(master,tag,shape,endpoints,radians):
     elif tag[1] == 'W':
         newEndpoints = rotateXYlist(endpoints,3*np.pi/2.0)
     else:
-        print('in rotC, got here 0')
+        print('in rotC, Tag Not Found')
         pass
     endpoints = newEndpoints
     ptList = master.coords(tag)#Returns some line from this component

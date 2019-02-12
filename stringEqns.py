@@ -225,4 +225,3 @@ def reduceExp(exp):#Reduce an algebraic expression and systematize its form.
 #aList = ['']
 #print(aList[0] += 'abc'+'def')
 #'abc' += 'def'
-
