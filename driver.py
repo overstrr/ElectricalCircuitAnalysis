@@ -101,6 +101,20 @@ def makeCircuitSolveNumeric():
 #                addArrow(canvasMain,compStr,direction,i,offset)
         return 
     addComputeButton(root,f2,analyseCircuit)# Bind analyseCir to computeButton
+#    noval = Pmw.EntryField(root, labelpos=W, label_text='No validation',
+#validate = None)
+    e = StringVar()
+    Entry(f2, width=40, textvariable=e).grid(row=1,column=1)
+    e.set("'A shroe! A shroe! My dingkom for a shroe!'")
+    
+    var = IntVar()
+    f3 = Frame(f2,borderwidth=2,relief=GROOVE,bg='red')
+    f3.grid(row=2,column=2)
+    for text, value in [('Passion fruit', 1), ('Loganberries', 2),
+        ('Mangoes in syrup', 3), ('Oranges', 4),
+        ('Apples', 5),('Grapefruit', 6)]:
+        Radiobutton(f2, text=text, value=value, variable=var).grid(column=1)
+    var.set(3)
     #addComputeButton(root,canvasMain,analyseCircuit)
     #makeCompCurDict(numMat,compStrs,compVals,strEqnList)
 
@@ -124,4 +138,3 @@ someEdges = [[['BN0', 0], ['RE1', 1]],
              [['RN6', 1], ['RE5', 0]], 
              [['RE1', 0], ['RN3', 0]], 
              [['RN6', 0], ['RE7', 1]]]
-
