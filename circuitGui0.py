@@ -30,6 +30,11 @@ global leadSelection
 #global leadSelection1
 leadSelection = []
 #leadSelection1 = []
+global globalTagList
+globalTagList = []
+global globalValDict
+globalValDict = {}# keys are components, values are component values, 
+#ohms, volts ...
 global masterEdgeList
 masterEdgeList = []
 global RESISTOR_SHAPE,BATTERY_SHAPE,CURRENT_SOURCE_SHAPE
@@ -204,7 +209,7 @@ def rotateComponent(master,tag,shape,endpoints,radians):
     elif tag[1] == 'W':
         newEndpoints = rotateXYlist(endpoints,3*np.pi/2.0)
     else:
-        print('in rotC, got here 0')
+        print('in rotC, Tag Not Found')
         pass
     endpoints = newEndpoints
     ptList = master.coords(tag)#Returns some line from this component
@@ -314,6 +319,7 @@ def moveComponent(master,event,tag):
     return
 
 def userCreateComponents(master,mouseDist):
+    global globalTagList
     print('Input a list of component tags, such as RN0, BW1, etc.')
     usersCompStr = input()
    # print(usersCompStr)
@@ -322,8 +328,8 @@ def userCreateComponents(master,mouseDist):
     #print(usersCompList)
     for tag in usersCompList:
         tag = tag.upper()
+        globalTagList.append(tag)# For storing tags to use create comp form.
         compType = tag[0]
-        #compRot = tag[1]
         if compType == 'B':#Add the component.
             addComponent(master,BATTERY_SHAPE,BATTERY_ENDPOINTS,tag)
         elif compType == 'R':
@@ -350,11 +356,15 @@ def stripOrientationChar(usersCompList):
     return compList
 
 def userSetCompVals(compList):
+    global globalValDict
     compValList = []
     print('For each component, please give the value in the desired units.')
     for comp in compList:
         print(comp+'?')
-        compValList.append(float(input()))
+        userStr = input()
+        val = float(userStr)
+        compValList.append(val)
+        globalValDict[comp] = val
     print('Done with component value inputs.')
     return compValList
 #userCreateComponents(canvasMain,10)
@@ -427,10 +437,12 @@ def makeWire(master,event,componentList,mouseDist):#bind to double click: <Doubl
     return newEdge
 
 def makeConnection(master,event,tagList,mouseDist):
+    global globalTagList
     global masterEdgeList
     #printDoubleClickCoords(master,event)
     #print('got here -1')
     global leadSelection
+    tagList = globalTagList
     newEdge = []
     comp = ''#Component to connect to.
     pos = []#x,y for component 0.
@@ -540,7 +552,7 @@ def printMouseOverCoords():
 
 def addComputeButton(root,master,runFunc):
     buttonId = Button(master,text='Analyse Circuit')
-    buttonId.grid(row=0,column=1)#in_=master)
+    buttonId.grid()#in_=master)
     buttonId.bind(sequence='<Button-1>',func=runFunc)
     return
 
@@ -636,6 +648,7 @@ def addArrow(master,compTag,direction,currentNum,level):# Level is the number
 
 def arrowList2arrows(arrowList,compTagList,master):
     compDict = {}
+    # compTag has the orientation character, comp does not.
     for compTag in compTagList:
         comp = str(compTag)
         comp = comp.replace('N','')# Remove the rotation direction letter.
