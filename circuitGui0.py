@@ -8,7 +8,7 @@ Created on Wed Jan  2 20:15:31 2019
 """
 ASSUMPTIONS:
 1. Each component has a tag that starts with a letter to designate its 
-type. Not case sensitive. B = battery. R = resistor.
+type. Not case sensitive(?). B = battery. R = resistor.
 2. Tags have the form XYZ...Z, where X is the type, Y is the rotation, 
 such as N,E,S,W for north/0 rads, east/pi/2 rads, south/pi rads,(why clockwise?)
 west/3pi/2 rads. And Z...Z is the component number such as R0,R1,R1,B1,B2 ect.
@@ -17,6 +17,9 @@ west/3pi/2 rads. And Z...Z is the component number such as R0,R1,R1,B1,B2 ect.
 from Tkinter import *
 
 import numpy as np
+
+#import readline
+
 #m = np.matrix([[1,2,3],[4,5,6],[7,8,9]])
 #print m
 #r = np.rot90(m)
@@ -37,122 +40,284 @@ globalValDict = {}# keys are components, values are component values,
 #ohms, volts ...
 global masterEdgeList
 masterEdgeList = []
-global RESISTOR_SHAPE,BATTERY_SHAPE,CURRENT_SOURCE_SHAPE
+#global RESISTOR_SHAPE,BATTERY_SHAPE,CURRENT_SOURCE_SHAPE
 #RESISTOR_SHAPE = [[0,40,10,40,15,45,25,35,35,45,
 #                       45,35,55,45,65,35,70,40,80,40]]#horiontal
 #RESISTOR_SHAPE = [[0.0, 40.0, 0.0, 50.0, -5.0, 55.0, #vertical
 #                   5.0, 65.0, -5.0, 75.0, 5.0, 85.0,
 #                   -5.0, 95.0, 5.0, 105.0, 0.0, 110.0,
-#                   0.0, 120.0]]
-RESISTOR_SHAPE = [[100.0, 140.0, 100.0, 150.0, 95.0, #vertical and offset to see better
-                   155.0, 105.0, 165.0, 95.0, 175.0, 
-                   105.0, 185.0, 95.0, 195.0, 105.0, 
-                   205.0, 100.0, 210.0, 100.0, 220.0]]
-#print([x+100 for x in RESISTOR_SHAPE[0]])
-BATTERY_SHAPE = [[100,100,100,120],[80,120,120,120],[90,130,110,130],
-                 [80,140,120,140],[90,150,110,150],[100,150,100,170],
-                 [86,110,94,110],[90,106,90,114],[86,160,94,160]]
-global RESISTOR_ENDPOINTS, BATTERY_ENDPOINTS
-#RESISTOR_ENDPOINTS = [0,40,80,40]
-RESISTOR_ENDPOINTS = [100,140,100,220]
-BATTERY_ENDPOINTS = [100,100,100,170]
+##                   0.0, 120.0]]
+#RESISTOR_SHAPE = [[100.0, 140.0, 100.0, 150.0, 95.0, #vertical and offset to see better
+#                   155.0, 105.0, 165.0, 95.0, 175.0, 
+#                   105.0, 185.0, 95.0, 195.0, 105.0, 
+#                   205.0, 100.0, 210.0, 100.0, 220.0]]
+##print([x+100 for x in RESISTOR_SHAPE[0]])
+#BATTERY_SHAPE = [[100,100,100,120],[80,120,120,120],[90,130,110,130],
+#                 [80,140,120,140],[90,150,110,150],[100,150,100,170],
+#                 [86,110,94,110],[90,106,90,114],[86,160,94,160]]
+#global RESISTOR_ENDPOINTS, BATTERY_ENDPOINTS
+##RESISTOR_ENDPOINTS = [0,40,80,40]
+#RESISTOR_ENDPOINTS = [100,140,100,220]
+#BATTERY_ENDPOINTS = [100,100,100,170]
 
-def createCanvas(master,width,height,bg):
-    canvas = Canvas(master, width=width, height=height, bg=bg, closeenough=5)
+class BasicShape():
+    def __init__(self,lines=[],arcBoxes=[],arcStarts=[],arcExtents=[],ovalBoxes=[],
+                 polygons=[],rects=[],textPos=[],endpoints=[]):
+        self.lines = lines
+        self.arcBoxes = arcBoxes
+        self.arcStarts = arcStarts
+        self.arcExtents = arcExtents
+        self.ovalBoxes = ovalBoxes
+        self.polygons = polygons
+        self.rects = rects
+        self.textPos = textPos
+        self.endpoints = endpoints
+        return
+    
+class Shape():
+    R = BasicShape()
+    lines=[[100.0, 140.0, 100.0, 150.0, 95.0, 
+            155.0, 105.0, 165.0, 95.0, 175.0, 
+            105.0, 185.0, 95.0, 195.0, 105.0, 
+            205.0, 100.0, 210.0, 100.0, 220.0]]
+    textPos = [100+30,(140+220)/2.0]
+    endpoints=[100,140,100,220]
+    R.__init__(lines=lines,textPos=textPos,endpoints=endpoints)
+    B = BasicShape()
+    lines = [[100,100,100,120],[80,120,120,120],[90,130,110,130],
+             [80,140,120,140],[90,150,110,150],[100,150,100,170],
+             [86,110,94,110],[90,106,90,114],[86,160,94,160]]
+    textPos = [(100+170)/2.0+10,100+40]
+    endpoints = [100,100,100,170]
+    B.__init__(lines=lines,textPos=textPos,endpoints=endpoints)
+    L = BasicShape()
+    lines = [[100,100,100,110],
+             [100,110,105,110],
+             [100,120,105,120],
+             [100,130,105,130],
+             [100,140,105,140],
+             [100,150,105,150],
+             [100,150,100,160]]
+    arcBoxes = [[100,110,110,120],
+                [100,120,110,130],
+                [100,130,110,140],
+                [100,140,110,150]]
+    arcStarts = [-90.0 for x in range(4)]
+    arcExtents = [180.0 for x in range(4)]
+    textPos = [100+(160-100)/2.0,(100+160)/2.0]
+    endpoints = [100,100,100,160]
+    L.__init__(lines=lines,textPos=textPos,arcBoxes=arcBoxes,arcStarts=arcStarts,
+               arcExtents=arcExtents,endpoints=endpoints)
+    C = BasicShape()
+    sF = 15.0 # size factor
+    lines = [[100,100,100,100+2*sF],
+             [100-sF,100+2*sF,100+sF,100+2*sF],
+             [100,100+2.0*sF+sF/2.0,100,100+4.0*sF+sF/2.0]]
+    r = sF/np.cos(np.pi/6.0)
+    arcBoxes = [[100-r,100+2*sF+sF/2,100+r,100+2*sF+sF/2+2.0*r]]
+    arcStarts = [30.0]
+    arcExtents = [120.0]
+    textPos = [100+2.5*sF,100+2.0*sF+sF/4.0]
+    endpoints = [100,100,100,100+4.0*sF+sF/2.0]
+    C.__init__(lines=lines,arcBoxes=arcBoxes,arcStarts=arcStarts,arcExtents=arcExtents,
+               textPos=textPos,endpoints=endpoints)
+    V = BasicShape()
+    r = 20.0
+    lines = [[100,100,100,140-r],
+             [100,140+r,100,180]]
+    arcBoxes = [[100-r,140-r,100+r,140+r],
+                [100-r/2,140-r/4,100,140+r/4],
+                [100,140-r/4,100+r/2,140+r/4]]
+    arcStarts = [0.0,0.0,180.0]
+    arcExtents = [359.999,180.0,180.0]
+    textPos = [100+2*r,140]
+    endpoints = [100,100,100,180]
+    V.__init__(lines=lines,arcBoxes=arcBoxes,arcStarts=arcStarts,
+               arcExtents=arcExtents,textPos=textPos,endpoints=endpoints)
+
+def createCanvas(master,width,height,bg,mouseDist):
+    canvas = Canvas(master, width=width, height=height, bg=bg, closeenough=mouseDist)
     #canvas.pack()
     canvas.grid(column=0,row=0)
     return canvas
 
-def addResistor(master):
-    resistor = master.create_line(0,40,10,40,15,45,25,35,35,45,
-                       45,35,55,45,65,35,70,40,80,40)
-    return resistor
 
-def addBattery(master,tag):
-    
-    #f = Frame(master, borderwidth=2, relief=RAISED)
-    #c = Canvas(f,width = 100,height=100,bg='white')
-    c = master
-    c.create_line(100,100,100,120,tag = tag)# Bat
-    c.create_line(80,120,120,120,tag = tag)
-    c.create_line(90,130,110,130,tag = tag)
-    c.create_line(80,140,120,140,tag = tag)
-    c.create_line(90,150,110,150,tag = tag)
-    c.create_line(100,150,100,170,tag = tag)
-    
-    c.create_line(86,110,94,110,tag = tag)#Plus
-    c.create_line(90,106,90,114,tag = tag)
-    
-    c.create_line(86,160,94,160,tag = tag)#Minus
-    #f.pack()
-    #c.pack()
-    
-    return
+#def addInductor(master,tag):
+#    master.create_line(100,100,100,110,105,110,tag=tag)#lead 0 and first hump line
+#    master.create_arc(100,110,110,120,start=-90,extent=180,style=ARC,tag=tag)# 1st hump arc
+#    master.create_line(100,120,105,120,tag=tag)#2nd hump line
+#    master.create_arc(100,120,110,130,start=-90,extent=180,style=ARC,tag=tag)#2nd hump arc
+#    master.create_line(100,130,105,130,tag=tag)# 3rd hump line
+#    master.create_arc(100,130,110,140,start=-90,extent=180,style=ARC,tag=tag)#3rd hump arc
+#    master.create_line(100,140,105,140,tag=tag)# 4th hump line
+#    master.create_arc(100,140,110,150,start=-90,extent=180,style=ARC,tag=tag)
+#    master.create_line(100,150,105,150,tag=tag)# last hump line
+#    master.create_line(100,150,100,160,tag=tag)# lead 1 line
+#    master.create_text(130,130,text='L1',tag=tag)
+#    
+#    lineList = [[100,100,100,110],
+#                [100,110,105,110],
+#                [100,120,105,120],
+#                [100,130,105,130],
+#                [100,140,105,140],
+#                [100,150,105,150],
+#                [100,150,100,160]]
+#    
+#    arcBoxList = [[100,110,110,120],
+#                  [100,120,110,130],
+#                  [100,130,110,140],
+#                  [100,140,110,150]]
+#    oldAngle = -90
+#    newAngle = 90
+#    pivotX = 100
+#    pivotY = 100
+#    for line in lineList:
+#        pivLine = [pivotX,pivotY]+line
+#        rotLine = rotateXYlist(pivLine,newAngle*np.pi/180)
+#        rotLine.pop(0)
+#        rotLine.pop(0)
+#        master.create_line(rotLine,tag=tag)
+#    
+#    for box in arcBoxList:
+#        pivBox = [pivotX,pivotY]+box
+#        rotBox = rotateXYlist(pivBox,newAngle*np.pi/180)
+#        rotBox.pop(0)
+#        rotBox.pop(0)
+#        master.create_arc(rotBox,start=oldAngle-newAngle,extent=180,style=ARC,tag=tag)
+#
+#    textPos = [130,130]
+#    rotText = rotateXYlist([pivotX,pivotY]+textPos,newAngle*np.pi/180)
+#    rotText.pop(0)
+#    rotText.pop(0)
+#    master.create_text(rotText,text='L1',tag=tag)
+#    
+#    #master.scale(tag,100,100,4.0/3.0,4.0/3.0)
+#    
+#    
+#    master.tag_bind(tag,sequence='<B1-Motion>',#Allow to move comp around.
+#                            func=lambda event ,t = [tag]:(moveComponent(master,
+#                                                             event,t)))
+#    #master.create_arc(100,140,110,150,start=-90,extent=180,style=ARC,tag=tag)
+#    #[corner0,corner1,start] = rotateArc([100,140],[110,150],-90,[100,100],np.pi/2)
+#    #master.create_arc(corner0[0],corner0[1],corner1[0],corner1[1],start=start,extent=180,style=ARC,tag=tag)
+#    #master.create_line([100,100,150,150])    
+#    return
 
-def addComponent(master,shape,endpoints,tag):
-    tag = tag.upper()
-    for line in shape:
-        master.create_line(line,tag=tag)
-    #canvas.create_text(350,150, text='text', fill='yellow', font=('verdana', 36))
-    #For text position
-#    dx = endPoints[2] - endPoints[0]
-#    dy = endPoints[3] - endPoints[1]
-#    x = endPoints[0] + dy * 3.0/4.0
-#    y = endPoints[1] + dx * 3.0/4.0
-    
-    dx = endpoints[2] - endpoints[0]
-    dy = endpoints[3] - endpoints[1]
-    x = endpoints[0] + (dx+dy)/2.0
-    y = endpoints[1] + (dx+dy)/2.0
-    
-    text = tag#Remove the rotation direction
-    text = text.replace('N','')
-    text = text.replace('E','')
-    text = text.replace('S','')
-    text = text.replace('W','')  
-    master.create_text(x,y,text=text, tag = tag)
-    pi = np.pi
-    rot = tag[1]
-    if rot == 'N':
-        pass
-    elif rot == 'E':
-        rotateComponent(master,tag,shape,endpoints,pi/2.0)
-    elif rot == 'S':
-        rotateComponent(master,tag,shape,endpoints,pi)
-    elif rot == 'W':
-        rotateComponent(master,tag,shape,endpoints,3.0*pi/2.0)
-    return
+#def rotateArc(corner0,corner1,start,pivot,radians):
+#    #master.create_arc(100,110,110,120,start=-90,extent=180,style=ARC,tag=tag)
+#    xyList = [pivot[0],pivot[1],corner0[0],corner0[1],corner1[0],corner1[1]]
+#    newList = rotateXYlist(xyList,radians)
+#    [px,py,corner0x,corner0y,corner1x,corner1y] = newList
+#    newCorner0 = [corner0x,corner0y]
+#    newCorner1 = [corner1x,corner1y]
+#    rotDeg = radians*180.0/np.pi
+#    newStart = start-rotDeg
+#    return [newCorner0,newCorner1,newStart]
 
-def rotateResistor(master,resistor):
-    ptList = master.coords(resistor)#[x0,y0,x1,y1,x2,y2,...]
-    firstPt = [ptList[0],ptList[1]]
-    rotPtList = []#A new list of points starting at (0,0) with the same shape.
-    for i in range(len(ptList)):
-        if divmod(i,2)[1] == 0:
-            x = ptList[i]-firstPt[0]
-            rotPtList.append(x)
-        else:
-            y = ptList[i]-firstPt[1]
-            rotPtList.append(y)
-    for j in range(len(rotPtList)/2):#Take points 2 at a time.
-        swapX = rotPtList[2*j]
-        swapY = rotPtList[2*j+1]
-        rotPtList[2*j] = swapY + firstPt[0]#Switch x and y and add back the offset.
-        rotPtList[2*j+1] = swapX + firstPt[1]
-    newResistor = master.create_line(rotPtList)
-    return newResistor
+#def addComponent(master,shape,endpoints,tag):
+#    tag = tag.upper()
+#    for line in shape:
+#        master.create_line(line,tag=tag)
+#    #canvas.create_text(350,150, text='text', fill='yellow', font=('verdana', 36))
+#    #For text position
+##    dx = endPoints[2] - endPoints[0]
+##    dy = endPoints[3] - endPoints[1]
+##    x = endPoints[0] + dy * 3.0/4.0
+##    y = endPoints[1] + dx * 3.0/4.0
+#    
+#    dx = endpoints[2] - endpoints[0]
+#    dy = endpoints[3] - endpoints[1]
+#    x = endpoints[0] + (dx+dy)/2.0
+#    y = endpoints[1] + (dx+dy)/2.0
+#    
+#    text = tag#Remove the rotation direction
+#    text = text.replace('N','')
+#    text = text.replace('E','')
+#    text = text.replace('S','')
+#    text = text.replace('W','')  
+#    master.create_text(x,y,text=text, tag = tag)
+#    pi = np.pi
+#    rot = tag[1]
+#    if rot == 'N':
+#        pass
+#    elif rot == 'E':
+#        rotateComponent(master,tag,shape,endpoints,pi/2.0)
+#    elif rot == 'S':
+#        rotateComponent(master,tag,shape,endpoints,pi)
+#    elif rot == 'W':
+#        rotateComponent(master,tag,shape,endpoints,3.0*pi/2.0)
+#    return
+#
+#def addComponent1(master,shapeObj,tag):
+#    tag = tag.upper()
+#    lines = shapeObj.lines
+##    for line in shape:
+#    for line in lines:
+#        master.create_line(line,tag=tag)
+#    #canvas.create_text(350,150, text='text', fill='yellow', font=('verdana', 36))
+#    #For text position
+##    dx = endPoints[2] - endPoints[0]
+##    dy = endPoints[3] - endPoints[1]
+##    x = endPoints[0] + dy * 3.0/4.0
+##    y = endPoints[1] + dx * 3.0/4.0
+#    
+##    dx = endpoints[2] - endpoints[0]
+##    dy = endpoints[3] - endpoints[1]
+##    x = endpoints[0] + (dx+dy)/2.0
+##    y = endpoints[1] + (dx+dy)/2.0
+#    arcBoxes = shapeObj.arcBoxes
+#    start = shapeObj.arcStart
+#    extent = shapeObj.arcExtent
+#    style = ARC
+#    #master.create_arc(100,110,110,120,start=-90,extent=180,style=ARC,tag=tag)
+#    for box in arcBoxes:
+#        master.create_arc(box,start=start,extent=extent,style=style,tag=tag)
+#        
+#    text = tag#Remove the rotation direction
+#    text = text.replace('N','')
+#    text = text.replace('E','')
+#    text = text.replace('S','')
+#    text = text.replace('W','')  
+#    textPos = shapeObj.textPos 
+#    master.create_text(textPos,text=text, tag = tag)
+#    shape = shapeObj.lines
+#    endpoints = shapeObj.endpoints
+#    pi = np.pi
+#    rot = tag[1]
+#    if rot == 'N':
+#        pass
+#    elif rot == 'E':
+#        rotateComponent(master,tag,shape,endpoints,pi/2.0)
+#    elif rot == 'S':
+#        rotateComponent(master,tag,shape,endpoints,pi)
+#    elif rot == 'W':
+#        rotateComponent(master,tag,shape,endpoints,3.0*pi/2.0)
+#    return
 
-def rotateXYlist(xyList,radians):#rotate (clockwise?) relative to ref (??)
-    refX = xyList[0]
-    refY = xyList[1]
+
+
+#def rotateXYlist(xyList,radians):#rotate (clockwise?) relative to ref (??)
+#    refX = xyList[0]
+#    refY = xyList[1]
+#    newList = []#[x0,y0,x1,y1,...]
+#    for i in range(len(xyList)/2):#Assume the list has even length
+#        oldX = xyList[2*i] - refX
+#        oldY = xyList[2*i+1] -refY
+#        newX = round(np.cos(radians)*oldX - np.sin(radians)*oldY)
+#        newY = round(np.sin(radians)*oldX + np.cos(radians)*oldY)
+#        newList.append(newX+refX)
+#        newList.append(newY+refY)
+#    return newList
+
+def rotateXYList1(pivotX,pivotY,xyList,radians):#rotate (clockwise?) relative to ref (??)
     newList = []#[x0,y0,x1,y1,...]
     for i in range(len(xyList)/2):#Assume the list has even length
-        oldX = xyList[2*i] - refX
-        oldY = xyList[2*i+1] -refY
+        oldX = xyList[2*i] - pivotX
+        oldY = xyList[2*i+1] - pivotY
         newX = round(np.cos(radians)*oldX - np.sin(radians)*oldY)
         newY = round(np.sin(radians)*oldX + np.cos(radians)*oldY)
-        newList.append(newX+refX)
-        newList.append(newY+refY)
+        newList.append(newX+pivotX)
+        newList.append(newY+pivotY)
     return newList
 
 def locateCompEnds(master,tag):
@@ -162,10 +327,17 @@ def locateCompEnds(master,tag):
     rotLetter = tag[1]
     shapeEnds = []
     if  typeLetter== 'B':#alfabetical
-        shapeEnds = BATTERY_ENDPOINTS
-        
+        #shapeEnds = BATTERY_ENDPOINTS
+        shapeEnds = Shape.B.endpoints
     elif typeLetter == 'R':
-        shapeEnds = RESISTOR_ENDPOINTS
+        #shapeEnds = RESISTOR_ENDPOINTS
+        shapeEnds = Shape.R.endpoints
+    elif typeLetter == 'L':
+        shapeEnds = Shape.L.endpoints
+    elif typeLetter == 'C':
+        shapeEnds = Shape.C.endpoints
+    elif typeLetter == 'V':
+        shapeEnds = Shape.V.endpoints
     else:
         pass
     pi = np.pi
@@ -181,11 +353,11 @@ def locateCompEnds(master,tag):
         rotShapeEnds = shapeEnds
         pass
     if rotLetter == 'E':
-        rotShapeEnds = rotateXYlist(shapeEnds,pi/2.0)
+        rotShapeEnds = rotateXYList1(shapeEnds[0],shapeEnds[1],shapeEnds,pi/2.0)
     elif rotLetter == 'S':
-        rotShapeEnds = rotateXYlist(shapeEnds,pi)
+        rotShapeEnds = rotateXYList1(shapeEnds[0],shapeEnds[1],shapeEnds,pi)
     elif rotLetter == 'W':
-        rotShapeEnds = rotateXYlist(shapeEnds,3.0*pi/2.0)
+        rotShapeEnds = rotateXYList1(shapeEnds[0],shapeEnds[1],shapeEnds,3.0*pi/2.0)
     else:
         pass
     shapePos0 = [rotShapeEnds[0],rotShapeEnds[1]]
@@ -198,152 +370,171 @@ def locateCompEnds(master,tag):
     return [instancePos0,instancePos1]
 
 #print('lghR123G'.upper())
-def rotateComponent(master,tag,shape,endpoints,radians):
-    newEndpoints = []# Rotate endpoints appropriately.
-    if tag[1] == 'N':
-        newEndpoints = endpoints
-    elif tag[1] == 'E':
-        newEndpoints = rotateXYlist(endpoints,np.pi/2.0)
-    elif tag[1] == 'S':
-        newEndpoints = rotateXYlist(endpoints,np.pi)
-    elif tag[1] == 'W':
-        newEndpoints = rotateXYlist(endpoints,3*np.pi/2.0)
-    else:
-        print('in rotC, Tag Not Found')
-        pass
-    endpoints = newEndpoints
-    ptList = master.coords(tag)#Returns some line from this component
-    shapeOffset = [shape[0][0],shape[0][1]]#Some point in the shape to center on.
-    realLifeOffset = [ptList[0],ptList[1]]#Some point in the component instance in use on the canvas.
-    origenRefList = []#The list of lists of points with offset subtracted from each point.
-    for i in range(len(shape)):#Subtract off the offset and create a new list, origenRefList.
-        newLine = []
-        for j  in range(len(shape[i])/2):
-            newX = shape[i][2*j] - shapeOffset[0]
-            newLine.append(newX)
-            newY = shape[i][2*j+1] - shapeOffset[1]
-            newLine.append(newY)
-        origenRefList.append(newLine)
-    rotList = []
-    for i in range(len(origenRefList)):
-        newLine = []
-        for j in range(len(origenRefList[i])/2):
-            oldX = origenRefList[i][2*j]
-            oldY = origenRefList[i][2*j+1]
-            newX = round(np.cos(radians)*oldX-np.sin(radians)*oldY)+realLifeOffset[0]
-            newLine.append(newX)
-            newY = round(np.sin(radians)*oldX+np.cos(radians)*oldY)+realLifeOffset[1]
-            newLine.append(newY)
-        rotList.append(newLine)      
-    #Delete the old component.
-    master.delete(tag)
-    #Redraw the component.
-    for line in rotList:
-       # print(line)
-        master.create_line(line,tag=tag)
-        #print('line '+str(line))
-    print
-    #Set the text and compute the position.
-    text = tag
-    text = text.replace('N','')
-    text = text.replace('E','')
-    text = text.replace('S','')
-    text = text.replace('W','')
-    dx = endpoints[2] - endpoints[0]
-    dy = endpoints[3] - endpoints[1]
-    x = realLifeOffset[0] + (dx+dy)/2.0
-    y = realLifeOffset[1] + (dx+dy)/2.0
-    master.create_text(x,y,text = text, tag = tag)#Switch x and y, to rotate.
-    #Now draw the rotated component.    
+#def rotateComponent(master,tag,shape,endpoints,radians):
+#    newEndpoints = []# Rotate endpoints appropriately.
+#    if tag[1] == 'N':
+#        newEndpoints = endpoints
+#    elif tag[1] == 'E':
+#        newEndpoints = rotateXYlist(endpoints,np.pi/2.0)
+#    elif tag[1] == 'S':
+#        newEndpoints = rotateXYlist(endpoints,np.pi)
+#    elif tag[1] == 'W':
+#        newEndpoints = rotateXYlist(endpoints,3*np.pi/2.0)
+#    else:
+#        print('in rotC, Tag |'+str(tag)+'| not expected.')
+#        pass
+#    endpoints = newEndpoints
+#    ptList = master.coords(tag)#Returns some line from this component
+#    shapeOffset = [shape[0][0],shape[0][1]]#Some point in the shape to center on.
+#    realLifeOffset = [ptList[0],ptList[1]]#Some point in the component instance in use on the canvas.
+#    origenRefList = []#The list of lists of points with offset subtracted from each point.
+#    for i in range(len(shape)):#Subtract off the offset and create a new list, origenRefList.
+#        newLine = []
+#        for j  in range(len(shape[i])/2):
+#            newX = shape[i][2*j] - shapeOffset[0]
+#            newLine.append(newX)
+#            newY = shape[i][2*j+1] - shapeOffset[1]
+#            newLine.append(newY)
+#        origenRefList.append(newLine)
+#    rotList = []
+#    for i in range(len(origenRefList)):
+#        newLine = []
+#        for j in range(len(origenRefList[i])/2):
+#            oldX = origenRefList[i][2*j]
+#            oldY = origenRefList[i][2*j+1]
+#            newX = round(np.cos(radians)*oldX-np.sin(radians)*oldY)+realLifeOffset[0]
+#            newLine.append(newX)
+#            newY = round(np.sin(radians)*oldX+np.cos(radians)*oldY)+realLifeOffset[1]
+#            newLine.append(newY)
+#        rotList.append(newLine)      
+#    #Delete the old component.
+#    master.delete(tag)
+#    #Redraw the component.
+#    for line in rotList:
+#       # print(line)
+#        master.create_line(line,tag=tag)
+#        #print('line '+str(line))
+#    print
+#    #Set the text and compute the position.
+#    text = tag
+#    text = text.replace('N','')
+#    text = text.replace('E','')
+#    text = text.replace('S','')
+#    text = text.replace('W','')
+#    dx = endpoints[2] - endpoints[0]
+#    dy = endpoints[3] - endpoints[1]
+#    x = realLifeOffset[0] + (dx+dy)/2.0
+#    y = realLifeOffset[1] + (dx+dy)/2.0
+#    master.create_text(x,y,text = text, tag = tag)#Switch x and y, to rotate.
+#    #Now draw the rotated component.    
+#    return
+#
+#def rotateComponent1(master,shapeObj,tag,radians):
+#    #endpoints = list(shapeObj.endpoints)
+#    newRads = 0.0
+#    orient = tag[1]
+#    if orient == 'N':
+#        newRads = radians
+#    elif orient == 'E':
+#        newRads = radians + np.pi/2.0
+#    elif orient == 'S':
+#        newRads = radians + np.pi
+#    elif orient == 'W':
+#        newRads = radians + 3.0*np.pi/2.0
+#    else:
+#        print('in cG0,rC1,bad orientation in tag')
+#    lines = list(shapeObj.lines)
+#    arcBoxes = list(shapeObj.arcBoxes)
+#    arcStart = float(shapeObj.arcStart)-newRads*180.0/np.pi
+#    arcExtent = float(shapeObj.arcExtent)
+#    textPos = list(shapeObj.textPos)
+#    coords = master.coords(tag)
+#    master.delete(tag)
+#    lead0StartX = coords[0]
+#    lead0StartY = coords[1]
+#    for line in lines:
+#        newLine = rotateXYList1(lead0StartX,lead0StartY,line,newRads)
+#        master.create_line(newLine,tag=tag)
+#    for box in arcBoxes:
+#        newBox = rotateXYList1(lead0StartX,lead0StartY,box,newRads)
+#        # master.create_arc(box,start=start,extent=extent,style=style,tag=tag)
+#        master.create_arc(newBox,start=arcStart,extent=arcExtent,style=ARC,tag=tag)
+#    [text] = stripOrientationChar([tag])
+#    #print('in cG0,rC1, text = '+str(text))
+#    rotTextPos = rotateXYList1(lead0StartX,lead0StartY,textPos,newRads)
+#    master.create_text(rotTextPos,text=text,tag=tag)
+#    return
+
+def addComponent2(master,shapeObj,tag,radians):
+    lines = list(shapeObj.lines)
+    arcBoxes = list(shapeObj.arcBoxes)
+    
+    
+    textPos = list(shapeObj.textPos)
+    #coords = master.coords(tag)
+    #master.delete(tag)
+    coords = lines[0]
+    lead0StartX = coords[0]
+    lead0StartY = coords[1]
+    for line in lines:
+        newLine = rotateXYList1(lead0StartX,lead0StartY,line,radians)
+        master.create_line(newLine,tag=tag)
+    for i in range(len(arcBoxes)):
+        newBox = rotateXYList1(lead0StartX,lead0StartY,arcBoxes[i],radians)
+        # master.create_arc(box,start=start,extent=extent,style=style,tag=tag)
+        #print('aC2, tag = '+str(tag))
+        arcStart = float(shapeObj.arcStarts[i])-radians*180.0/np.pi# Tkinter needs degs
+        arcExtent = float(shapeObj.arcExtents[i])
+        master.create_arc(newBox,start=arcStart,extent=arcExtent,style=ARC,tag=tag+'a')
+       # master.create_arc(newBox,start=arcStart,extent=arcExtent,style=ARC,tag=tag)
+    [text] = stripOrientationChar([tag])
+    #print('in cG0,rC1, text = '+str(text))
+    #print('textPos = '+str(textPos))
+    rotTextPos = rotateXYList1(lead0StartX,lead0StartY,textPos,radians)
+    #print('text = '+str(text))
+    #print('rotTextPos = '+str(rotTextPos))
+    #print('tag = '+str(tag))
+    master.create_text(rotTextPos,text=text,tag=tag)
     return
-#def moveResistor(event):
-    #.move(resistor,50,50)
-#root = Tk()
-#canvasMain = createCanvas(root,1000,1000,'white')
-#f = Frame(root, borderwidth=2, relief=RAISED)
-#canvasMain.create_rectangle(405,10,500,105, outline='white', canvasMain.tag_bind('b1',sequence='<B1-Motion>',func=lambda event:(moveComponent(canvasMain,event,'b1')))
-#fill='gray50')
-#resistor0 = addResistor(canvasMain)
 
-#resistor1 = addResistor(canvasMain)
-
-#resistor2 = addResistor(canvasMain)
-#resistor3 = rotateResistor(canvasMain,resistor2)
-
-#addBattery(canvasMain,'b')
-
-#B for battery, R for resistor, N,E,S,W for rotation, 0,1,2,3,.. as in R2 or B1
-#addComponent(canvasMain,BATTERY_SHAPE,BATTERY_ENDPOINTS,'BN0')
-#addComponent(canvasMain,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,'RN0')
-#addComponent(canvasMain,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,'RE1')
-#addComponent(canvasMain,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,'RS2')
-#addComponent(canvasMain,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,'RW3')
-#addComponent(canvasMain,BATTERY_SHAPE,BATTERY_ENDPOINTS,'BN0')
-#addComponent(canvasMain,BATTERY_SHAPE,BATTERY_ENDPOINTS,'BE1')
-#addComponent(canvasMain,BATTERY_SHAPE,BATTERY_ENDPOINTS,'BS2')
-#addComponent(canvasMain,BATTERY_SHAPE,BATTERY_ENDPOINTS,'BW3')
-#rotateComponent(canvasMain,'RN0',RESISTOR_SHAPE,RESISTOR_ENDPOINTS,0)
-#rotateComponent(canvasMain,'RE1',RESISTOR_SHAPE,RESISTOR_ENDPOINTS,np.pi/2.0)
-#rotateComponent(canvasMain,'RS2',RESISTOR_SHAPE,RESISTOR_ENDPOINTS,np.pi)
-#rotateComponent(canvasMain,'RW3',RESISTOR_SHAPE,RESISTOR_ENDPOINTS,3.0*np.pi/2.0)
-#canvasMain.move('RN0',500,500)
-#canvasMain.move('RE1',500,500)
-#canvasMain.move('RS2',500,500)
-#canvasMain.move('RW3',500,500)
-
-
-#rotateComponent(canvasMain,'BN0',BATTERY_SHAPE,BATTERY_ENDPOINTS,np.pi/2.0)
-#canvasMain.move('b1',300,0)
-#canvasMain.move('R4',300,100)
- 
-#rotateComponent(canvasMain,'b1',BATTERY_SHAPE,BATTERY_ENDPOINTS,np.pi)
-
-#tag_bind(tagOrId, sequence=None, function=None, add=None)
-#coords(item, x0, y0, x1, y1, ..., xn, yn)
-def moveResistor(master,event,resistor):
-    coor = master.coords(resistor)
-    #mouse2resistorX = event.x - coor[0]
-    #mouse2resistorY = event.y - coor[1]
-    moveX = event.x - coor[0]
-    moveY = event.y - coor[1]
-    master.move(resistor,moveX,moveY)
-    return
-
-def moveComponent(master,event,tag):
+def moveComponent(master,event,tagList):
     #tag = tag.capitalize()
     #print('in movC, tag = '+tag)
-    coor = master.coords(tag)
+    coor = master.coords(tagList[0])
     moveX = event.x - coor[0]
     moveY = event.y - coor[1]
-    master.move(tag,moveX,moveY)
+    for tag in tagList:
+        master.move(tag,moveX,moveY)
     return
 
-def userCreateComponents(master,mouseDist):
-    global globalTagList
-    print('Input a list of component tags, such as RN0, BW1, etc.')
-    usersCompStr = input()
-   # print(usersCompStr)
-    usersCompStr = usersCompStr.upper()
-    usersCompList = usersCompStr.split(',')
-    #print(usersCompList)
-    for tag in usersCompList:
-        tag = tag.upper()
-        globalTagList.append(tag)# For storing tags to use create comp form.
-        compType = tag[0]
-        if compType == 'B':#Add the component.
-            addComponent(master,BATTERY_SHAPE,BATTERY_ENDPOINTS,tag)
-        elif compType == 'R':
-            addComponent(master,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,tag)
-        else:
-            pass
-        master.tag_bind(tag,sequence='<B1-Motion>',#Allow to move comp around.
-                            func=lambda event ,t = tag:(moveComponent(master,
-                                                             event,t)))
-    master.bind('<Double-Button-1>',#Allow making connections.
-                    func=lambda event:(makeConnection(master,
-                                                      event,usersCompList,
-                                                      mouseDist)))      
-    return usersCompList
+#def userCreateComponents(master,mouseDist):
+#    global globalTagList
+#    print('Input a list of component tags, such as RN0, BW1, etc.')
+#    #readline.insert_text('XX')
+#    usersCompStr = input()
+#    print(usersCompStr)
+#    usersCompStr = usersCompStr.upper()
+#    usersCompList = usersCompStr.split(',')
+#    print('userCompList = '+str(usersCompList))
+#    #if len(userCompList) != 0:
+#    for tag in usersCompList:
+#        tag = tag.upper(tag)
+#        globalTagList.append(tag)# For storing tags to use create comp form.
+#        compType = tag[0]
+#        if compType == 'B':#Add the component.
+#            addComponent(master,BATTERY_SHAPE,BATTERY_ENDPOINTS,tag)
+#        elif compType == 'R':
+#            addComponent(master,RESISTOR_SHAPE,RESISTOR_ENDPOINTS,tag)
+#        else:
+#            pass
+#        master.tag_bind(tag,sequence='<B1-Motion>',#Allow to move comp around.
+#                            func=lambda event ,t = [tag]:(moveComponent(master,
+#                                                             event,t)))
+#    master.bind('<Double-Button-1>',#Allow making connections.
+#                    func=lambda event:(makeConnection(master,
+#                                                      event,usersCompList,
+#                                                      mouseDist)))      
+#    return usersCompList
 
 def stripOrientationChar(usersCompList):
     compList = []
@@ -355,18 +546,18 @@ def stripOrientationChar(usersCompList):
         compList.append(str(thin))
     return compList
 
-def userSetCompVals(compList):
-    global globalValDict
-    compValList = []
-    print('For each component, please give the value in the desired units.')
-    for comp in compList:
-        print(comp+'?')
-        userStr = input()
-        val = float(userStr)
-        compValList.append(val)
-        globalValDict[comp] = val
-    print('Done with component value inputs.')
-    return compValList
+#def userSetCompVals(compList):
+#    global globalValDict
+#    compValList = []
+#    print('For each component, please give the value in the desired units.')
+#    for comp in compList:
+#        print(comp+'?')
+#        userStr = input()
+#        val = float(userStr)
+#        compValList.append(val)
+#        globalValDict[comp] = val
+#    print('Done with component value inputs.')
+#    return compValList
 #userCreateComponents(canvasMain,10)
 
 #moveComponent(canvasMain,4,'b')
@@ -391,50 +582,6 @@ def userSetCompVals(compList):
 #canvasMain.tag_bind('BW3',sequence='<B1-Motion>',func=lambda event:(moveComponent(canvasMain,event,'BW3')))
 
 
-def makeWire(master,event,componentList,mouseDist):#bind to double click: <Double-Button-1>
-    #print('got here -1')
-    global leadSelection0,leadSelection1
-    newEdge = []
-    comp = -1#Component to connect to.
-    pos = []#x,y for component 0.
-    end = -1# 0 for first end of that component, 1 for second end.
-    hit = False
-    for component in componentList:
-        coor = master.coords(component)
-        compX0 = coor[0]
-        compX1 = coor[-2]
-        compY0 = coor[1]
-        compY1 = coor[-1]
-        if abs(event.x - compX0) < mouseDist and abs(event.y - compY0) < mouseDist:#mouse close to end 0
-             comp = component
-             pos = [compX0,compY0]
-             end = 0
-             #print('got here 0')
-             hit = True
-        elif abs(event.x - compX1) < mouseDist and abs(event.y - compY1) < mouseDist:
-            comp = component
-            pos = [compX1,compY1]
-            end = 1
-            #print('got here 1')
-            hit = True
-        else:
-           pass
-      
-    if hit:
-        if leadSelection0 == []:# First end of wire.
-            leadSelection0 = [comp,pos,end]
-        else:
-            [comp0,pos0,end0] = leadSelection0
-            leadSelection0 = []
-            [comp1,pos1,end1] = [comp,pos,end]
-            x0 = pos0[0]# x coord
-            y0 =pos0[1] # y coord
-            x1 = pos1[0]
-            y1 = pos1[1]
-            newEdge = [[comp0,end0],[comp1,end1]]
-            master.create_line(x0,y0,x1,y1)
-            print(newEdge)
-    return newEdge
 
 def makeConnection(master,event,tagList,mouseDist):
     global globalTagList
@@ -443,6 +590,7 @@ def makeConnection(master,event,tagList,mouseDist):
     #print('got here -1')
     global leadSelection
     tagList = globalTagList
+    #print('in cG0,mC, taglist = '+str(tagList))
     newEdge = []
     comp = ''#Component to connect to.
     pos = []#x,y for component 0.
@@ -469,11 +617,26 @@ def makeConnection(master,event,tagList,mouseDist):
     if hit:
         if leadSelection == []:# First end of wire.
             leadSelection = [comp,pos,end]
+            #print('mC, comp = '+str(comp))
+            #print(master.itemconfigure(comp))
+            #print(master)
+            
             master.itemconfigure(tagOrId=comp,fill='red')
+            #master.itemconfigure(tagOrId=comp,outline='red')
+            master.itemconfigure(tagOrId=comp+'a',outline='red')
+            
+#            try:
+#                master.itemconfigure(tagOrId=comp,outline='red')
+#                print('got to try')
+#            except:
+#                master.itemconfigure(tagOrId=comp,fill='red')
+#                print('got to except')
+            
         else:
             [comp0,pos0,end0] = leadSelection#Last round
             leadSelection = []
             master.itemconfigure(tagOrId=comp0,fill='black')
+            master.itemconfigure(tagOrId=comp0+'a',outline='black')
             [comp1,pos1,end1] = [comp,pos,end]#This round
             if comp0 != comp1:#Do not allow connecting a component to itself.
                 x0 = pos0[0]# x coord
@@ -487,18 +650,18 @@ def makeConnection(master,event,tagList,mouseDist):
                 masterEdgeList.append(newEdge)
     return newEdge
 
-def getComponentEndpoints(tag):
-    endpoints = []
-    letter = tag[0]
-    #letter = letter.capitalize()
-    if letter == 'B':
-        endpoints = BATTERY_ENDPOINTS
-    elif letter == 'R':
-        endpoints = RESISTOR_ENDPOINTS
-    else:
-        print('In getComponentEndpoints - tag does not specify an ' +\
-              'existing type of component.')
-    return endpoints
+#def getComponentEndpoints(tag):
+#    endpoints = []
+#    letter = tag[0]
+#    #letter = letter.capitalize()
+#    if letter == 'B':
+#        endpoints = BATTERY_ENDPOINTS
+#    elif letter == 'R':
+#        endpoints = RESISTOR_ENDPOINTS
+#    else:
+#        print('In getComponentEndpoints - tag does not specify an ' +\
+#              'existing type of component.')
+#    return endpoints
 
 
 
@@ -524,18 +687,6 @@ def chooseSquareWire(master,event,tag,line):
         otherTag = 'blueLine'
     else:
         print('in cSW, else, tag = '+tag)
-    #line = master.coords(otherTag)
-    #line = l
-#    master.delete(tag)
-#    master.delete(otherTag)
-    
-    #print('tag = '+tag)
-    #print('otherTag = '+otherTag)
-    #print
-    #print('line = '+str(line))
-   # print('tag coords = '+str((master.coords(tag))))
-    #print('otherTag coords '+str(master.coords(otherTag)))
-    #print
     master.create_line(master.coords(otherTag))
     master.delete(tag)
     master.delete(otherTag)
@@ -607,9 +758,9 @@ def addArrow(master,compTag,direction,currentNum,level):# Level is the number
         color = 'purple'
         angle = 3.0*np.pi/2.0
     # Rotate stuff by the correct angle.
-    shaft = rotateXYlist(shaft,angle)
-    barb = rotateXYlist(barb,angle)
-    textPos = rotateXYlist(textPos,angle)
+    shaft = rotateXYList1(shaft[0],shaft[1],shaft,angle)
+    barb = rotateXYList1(barb[0],barb[1],barb,angle)
+    textPos = rotateXYList1(textPos[0],textPos[1],textPos,angle)
     # Strip the start position after rotating around it.
     shaft.pop(0)
     shaft.pop(0)
@@ -625,10 +776,10 @@ def addArrow(master,compTag,direction,currentNum,level):# Level is the number
         midY = (shaft[1] + shaft[3])/2.0
         midPos = [midX,midY]
         angle = np.pi
-        barb = rotateXYlist(midPos+barb,angle)
-        shaft = rotateXYlist(midPos+shaft,angle)
+        barb = rotateXYList1(midPos[0],midPos[1],midPos+barb,angle)
+        shaft = rotateXYList1(midPos[0],midPos[1],midPos+shaft,angle)
         textPivot = [shaft[0],shaft[1]]# The tail of the arrow.
-        textPos=rotateXYlist(textPivot+textPos,angle)
+        textPos=rotateXYList1(textPivot[0],textPivot[1],textPivot+textPos,angle)
         # Strip the mid position after rotating around it.
         shaft.pop(0)
         shaft.pop(0)
@@ -697,3 +848,4 @@ def arrowList2arrows(arrowList,compTagList,master):
 #    [['RN2', 1], ['RN4', 0]], [['RN4', 1], ['RW7', 1]], [['RW7', 0], ['RW8', 1]], 
 #    [['RW8', 0], ['BN0', 1]], [['RW6', 0], ['RW8', 0]], [['RW6', 1], ['RW5', 0]], 
 #    [['RW5', 1], ['RN4', 0]]]
+

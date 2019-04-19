@@ -47,6 +47,18 @@ Created on Mon Jan 21 13:46:23 2019
 #compStrs = ['R0','R1','R2','R3','B0','B1','B2']
 #compVals = [47,22,33,10,12,6,8]
 
+'''Rules for taking voltage sources one at a time:
+    
+    1. Replace each not currently included sinusoidal source with a short,
+    that is 0, unless, 2.
+    
+    2.If the cycle that the source is in has only 2 components, just delete
+    the equation for that cycle, or maybe replace it with all zeros in num Mat.
+    
+    3. Run RREF for each source and add up the currents at the end.'''
+    
+    
+
 def strEqns2strMatrix(strEqnList):
     iListList = []# a list of lists of values assocatied with each electrical current
     for i in range(len(strEqnList)):
@@ -79,7 +91,7 @@ def strEqns2strMatrix(strEqnList):
                     pass
                 else:
                     component = str(factor)
-            if component[0] == 'B':
+            if component[0] == 'B' or component[0] == 'V':
                 if rightStr == '0':# Zero by default. Replace.
                     if polarity == '':# + --> - on RHS
                         rightStr = str('-'+str(component))
@@ -104,12 +116,17 @@ def strEqns2strMatrix(strEqnList):
             print
     return iListList
 
+
+# For inductors, compStrs has L*, but strMat has XL*.
+
 def strMat2numMat(compStrs,compVals,strMat):
+    print('in sE, sM2nM, compStrs = '+str(compStrs))
+    print('in sE, sM2nM, compVals = '+str(compVals))
     numMat = []
     for i in range(len(strMat)):
         numMat.append([])# numMat[i]
         for j in range(len(strMat[i])):
-            numElem = 0# Numeric element of numMat.
+            numElem = 0.0# Numeric element of numMat.
             strVal = strMat[i][j]
             addedPluses = ''
             for k in range(len(strVal)):
@@ -132,10 +149,11 @@ def strMat2numMat(compStrs,compVals,strMat):
                     sign = 1.0
                     comp = str(term)
                 #print('sign = '+str(sign)+', comp = '+str(comp))
-                for l in range(len(compStrs)):
-                    if comp == compStrs[l]:# Batteries are already seperated out.
+                for l in range(len(compStrs)):# Batteries are already seperated out.
+                   # print('in sE,sM2nM, compStrs[l] = '+str(compStrs[l])+' : '+str(comp))
+                    if comp == compStrs[l] or comp == 'X'+compStrs[l]:#XL*/XC*
                         numElem += sign*compVals[l]
-            numMat[i].append(float(numElem))#NumMat[i][j]
+            numMat[i].append(complex(numElem))#NumMat[i][j]
     return numMat
 
 def reduceExp(exp):#Reduce an algebraic expression and systematize its form.
