@@ -12,6 +12,8 @@ from stringEqns import *
 from matrixSolve import *
 from GuiWidgets import *
 
+import numpy as np
+
 #masterEdgeList = [[['BN1', 1], ['RN3', 1]], 
 #                  [['RN3', 1], ['BS2', 0]], 
 #                  [['BS2', 1], ['RW2', 1]], 
@@ -21,6 +23,10 @@ from GuiWidgets import *
 #                  [['RW1', 0], ['BN0', 1]], 
 #                  [['RW1', 1], ['RW2', 0]], 
 #                  [['RW2', 0], ['RN3', 0]]]
+#!!!ERROR-----2 batteries and a resistor all in parallel is not computed right.
+# Or maybe this is indeterminate.
+# It is indeterminant because the resistance is 0 so the current is infinite.
+# If a cycle has 0 impedence and nonzero voltage source sums, tell user.
 
 def makeCircuitSolveNumeric():
 #    print('Be prepared to enter a circuit with labels and values.')
@@ -34,14 +40,22 @@ def makeCircuitSolveNumeric():
     f2 = Frame(f0)
     f2.grid(row=0,column=1)
     mouseDist = 10
-    canvasMain = createCanvas(f1,1000,1000,'white')
+    canvasMain = createCanvas(f1,1000,1000,'white',mouseDist)
     canvasMain.bind('<Double-Button-1>',#Allow making connections.
                     func=lambda event:(makeConnection(canvasMain,
                                                       event,globalTagList,
                                                       mouseDist)))
+    #addComponent2(canvasMain,Shape.V,'VN1',0.0)
+    #addComponent2(canvasMain,Shape.C,'CN1',np.pi)
     
+    #addInductor(canvasMain,'L')
+    
+    #addComponent1(canvasMain,Shape().R,'RN5')
+    
+    #rotateComponent1(canvasMain,Shape.R,'RN5',0.0*3.0*np.pi/2.0)
+    #addComponent2(canvasMain,Shape.B,'LW5',3.0*np.pi/2.0)
     #canvasMain = createCanvas(root,1000,1000,'white')
-    if True:
+    if False:
         orientCompStrs = userCreateComponents(canvasMain,mouseDist)
         compStrs = stripOrientationChar(orientCompStrs)
         compVals = userSetCompVals(compStrs)
@@ -162,3 +176,6 @@ someEdges = [[['BN0', 0], ['RE1', 1]],
              [['RN6', 1], ['RE5', 0]], 
              [['RE1', 0], ['RN3', 0]], 
              [['RN6', 0], ['RE7', 1]]]
+
+#print(np.complex.conjugate(4+5j))
+

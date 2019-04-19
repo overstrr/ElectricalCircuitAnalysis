@@ -731,12 +731,13 @@ def setPolarities(V,vObjs,vCycleList):
                 leadStr = vObjPrev.label
                 leadNum = leadStr[0]# leftmost char is either 0 or 1.
                 #print('i,j = '+str((i,j))+' polarityList = '+str(vObj.polarityList))
-                if compId == 'B':# batteries keep thier polarity
+                if compId == 'B' or 'V':# batteries keep thier polarity
                     if leadNum == '0':# Came to positive side first.
                         vObj.polarityList[i] = ['+','-']
                     elif leadNum == '1':# Came to negative side first.
                         vObj.polarityList[i] = ['-','+']
-                elif compId == 'R':# Not a battery, so must be a resistor
+                #elif compId == 'R' or compId == 'L':# Not a battery, so must be a resistor
+                else:
                     #vObj.polarityList[i] = ['-','+']#Foward relative to I for this cycle.
                                                     # But that's always the case. (?)
                     if leadNum == '0':# came to lead 0 first
@@ -745,8 +746,8 @@ def setPolarities(V,vObjs,vCycleList):
                     elif leadNum == '1':# came to lead 1 first
                         vObj.polarityList[i] = ['+','-']# lead 0 is pos, lead 1 is neg
                     
-                else:
-                    print('in setP, got here 0')
+#                else:
+#                    print('in eD,setP, got here 0')
                 direction = []
                 current = i
                 if leadNum == '0': # previous vertex is lead 0: Direction is [0,1].
@@ -755,6 +756,7 @@ def setPolarities(V,vObjs,vCycleList):
                     direction = [1,0]
                 arrowListList[i].append([vStr,direction,current])
     return arrowListList
+
 
 def eqStrWrite(vCycles):# Takes a list of vObjs with polarities set.
     eqnlist = []
@@ -770,7 +772,7 @@ def eqStrWrite(vCycles):# Takes a list of vObjs with polarities set.
             if first.isalpha():# vObj is a component, not  a lead.
                 prev = vCycles[i][j-1]# The lead of the component.
                 leadNumStr = prev.label[0]# leftmost char is '0' or '1' for the lead
-                if first == 'B':
+                if first == 'B' or first == 'V':
                     # Cycle currents are not a factor in battery voltages.
                     if polars[i] == ['+','-']:# Came to positive side first.
                             newstr += ' + (-1)*'+str(lab)
@@ -804,6 +806,45 @@ def eqStrWrite(vCycles):# Takes a list of vObjs with polarities set.
                                 pass
                         else:
                             pass
+                elif first == 'L':
+                    Xlab = 'X'+lab
+                    for k in range(len(polars)):
+                        if polars[k] == ['-','+']:# lead 0 is negative.
+                            if leadNumStr == '0':# Came to 0 first.
+                                newstr += ' + (+1)*I'+str(k)+'*'+str(Xlab)# pos dir
+                            elif leadNumStr == '1':# Came to 1 first.
+                                newstr += ' + (-1)*I'+str(k)+'*'+str(Xlab)
+                            else:
+                                pass
+                        elif polars[k] == ['+','-']:
+                            if leadNumStr == '0':
+                                newstr += ' + (-1)*I'+str(k)+'*'+str(Xlab)
+                            elif leadNumStr == '1':
+                                newstr += ' + (+1)*I'+str(k)+'*'+str(Xlab)
+                            else:
+                                pass
+                        else:
+                            pass
+                elif first == 'C':
+                    Xlab = 'X'+lab
+                    for k in range(len(polars)):
+                        if polars[k] == ['-','+']:# lead 0 is negative.
+                            if leadNumStr == '0':# Came to 0 first.
+                                newstr += ' + (+1)*I'+str(k)+'*'+str(Xlab)# pos dir
+                            elif leadNumStr == '1':# Came to 1 first.
+                                newstr += ' + (-1)*I'+str(k)+'*'+str(Xlab)
+                            else:
+                                pass
+                        elif polars[k] == ['+','-']:
+                            if leadNumStr == '0':
+                                newstr += ' + (-1)*I'+str(k)+'*'+str(Xlab)
+                            elif leadNumStr == '1':
+                                newstr += ' + (+1)*I'+str(k)+'*'+str(Xlab)
+                            else:
+                                pass
+                        else:
+                            pass
+                    
                 else:
                     pass
             eqnstr += str(newstr)  
@@ -838,9 +879,10 @@ def makeCompCurDict(compStrs,vStrs,vObjs,rrefMat,arrows):# Not quite right.
             if polarList[i] != []:# Cur i goes through comp.
                 curVal = IList[i]
                 direction = list(arrowDict[(compStr,i)])# safe, because member
-                if curVal >= 0:# current is nonnegative. Arrow direction correct.
+                # Probably np.real is not the correct way to do it, but fix later.
+                if np.real(curVal) >= 0:# current is nonnegative. Arrow direction correct.
                     pass
-                elif curVal < 0:# Arrow direction is backwards.
+                elif np.real(curVal) < 0:# Arrow direction is backwards.
                     direction.reverse()# Flip arrow direction
                     curVal = -curVal# and make current nonnegative.
                 if direction == refDir:# forward relative to refDir
@@ -852,7 +894,7 @@ def makeCompCurDict(compStrs,vStrs,vObjs,rrefMat,arrows):# Not quite right.
 def makeCompVoltDict(compCurDict,compStrs,compVals):
     compVoltDict = {}
     for i in range(len(compStrs)):# V = I * R
-        if compStrs[i][0] == 'R': # Skip batteries.
+        if compStrs[i][0] != 'B' and compStrs[i][0] !='V': # Skip batteries.
             compVoltDict[compStrs[i]] = compVals[i] * compCurDict[compStrs[i]]
     return compVoltDict
     

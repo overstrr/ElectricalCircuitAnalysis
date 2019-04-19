@@ -39,6 +39,10 @@ numMat = [[43.0, -10.0, 0.0, 8.0],
           [-10.0, 32.0, 0.0, 6.0], 
           [0.0, 0.0, 47.0, 26.0]]
 
+numMat = [[1.1234+1.0j,1.0-1.0j,1.0+2.0j,10.0],
+          [1.0+3.0j,3.0-4.0j,5.0+1.0j,15.0],
+          [5.0+1.0j,6.0-4.0j,8.0-3.0j,20.0]]
+
 def firstLRNonzeroPos(m,prevPiv):
     pos = [-1,-1]# init
     I = len(m)
@@ -159,11 +163,11 @@ def RREF(m):
 
 def display(m):
     print
-    spaceSize = 9
+    spaceSize = 30
     for i in range(len(m)):
         displayStr = ''
         for j in range(len(m[i])):
-            element = round(m[i][j],spaceSize/2)
+            element = np.round(m[i][j],spaceSize/2)
             displayStr += str(element)
             for k in range(spaceSize - len(str(element))):
                 displayStr += ' '
@@ -215,4 +219,24 @@ def display(m):
 #display(m)
 
 #print(np.zeros([3,4],dtype = int))
+
+#display(numMat)
+#RREF(numMat)
+#display(numMat)
+#print np.round(5.123456j,3)
+#import numpy as np
+
+#print(np.round(4.7+8.3j))
+
+#print(-0-0j == 0.0)
+    
+#m = [[1,-2,0,0,7,-3],
+#     [0,1,0,0,-3,1],
+#     [0,0,0,1,5,-4],
+#     [0,0,0,0,0,0]]
+#display(m)
+#RREF(m)
+#display(m)
+
+
     
